@@ -13,7 +13,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const sslEnabled = configService.get<string>('DB_SSL') === 'true';
+        const isProduction =
+          configService.get<string>('NODE_ENV') === 'production';
 
         return {
           type: 'postgres',
@@ -25,10 +26,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           database: configService.get<string>('DB_NAME') || 'usersMovies',
           entities: [__dirname + '/../**/*.entity{.ts,.js}'],
           synchronize: true,
-          ssl: sslEnabled ? { rejectUnauthorized: false } : false,
+          ssl: isProduction
+            ? {
+                rejectUnauthorized: false, // Esto evita problemas con certificados auto-firmados
+              }
+            : false, // Sin SSL en desarrollo
         };
       },
     }),
+
     TypeOrmModule.forFeature([User]),
   ],
   controllers: [UsersController],
