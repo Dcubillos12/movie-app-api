@@ -21,7 +21,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         database: configService.get<string>('DB_NAME'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: true,
-        ssl: false,
+        ssl: configService.get<string>('NODE_ENV') === 'true' ? true : false,
       }),
     }),
     TypeOrmModule.forFeature([User]),
